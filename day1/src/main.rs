@@ -1,14 +1,22 @@
 use file_reader::read_from_files;
-use std::collections::HashMap;
+use std::{collections::HashMap, io};
 
 fn main() {
-    let lines: Vec<String> = read_from_files("./day1/src/day1.txt").expect("Error reading file");
+    println!("Enter the file path:");
+    let mut file_path = String::new();
+    io::stdin()
+        .read_line(&mut file_path)
+        .expect("Failed to read line");
+    let file_path = file_path.trim();
+
+    let lines = read_from_files(file_path).expect("Failed to read file");
     let p1_sum = part1(lines.clone());
     println!("The sum of the part1 is: {}", p1_sum);
 
     let p2_sum = part2(lines);
     println!("The sum of the part2 is: {}", p2_sum);
 }
+
 fn part1(lines: Vec<String>) -> i32 {
     println!("start part 1");
     let numbers: Vec<i32> = lines
