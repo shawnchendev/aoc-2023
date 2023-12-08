@@ -1,5 +1,5 @@
 use file_reader::read_from_files;
-use std::{collections::HashMap, io};
+use std::{cmp::max, collections::HashMap, io};
 
 fn main() {
     println!("Enter the file path:");
@@ -9,7 +9,7 @@ fn main() {
         .expect("Failed to read line");
 
     let file_path = file_path.trim();
-    
+
     let lines = read_from_files(file_path).expect("Failed to read file");
     let p1_sum = part1(lines.clone());
     println!("The sum of the part1 is: {}", p1_sum);
@@ -47,18 +47,14 @@ impl GameInfo {
             .collect::<HashMap<&str, i32>>();
         let mut is_valid_draw: Vec<bool> = Vec::new();
         let color_totals = self.calculate_color_totals();
-        for total in &color_totals {
-            for (color, count) in total {
+        color_totals
+            .into_iter()
+            .flat_map(|total| total)
+            .for_each(|(color, count)| {
                 if let Some(total_count) = cubes.get(color) {
-                    if count > total_count {
-                        is_valid_draw.push(false);
-                        break;
-                    } else {
-                        is_valid_draw.push(true);
-                    }
+                    is_valid_draw.push(count <= *total_count);
                 }
-            }
-        }
+            });
         is_valid_draw.iter().all(|&x| x)
     }
 
@@ -68,15 +64,15 @@ impl GameInfo {
             .cloned()
             .collect::<HashMap<&str, i32>>();
         let color_totals = self.calculate_color_totals();
-        for (_, total) in color_totals.iter().enumerate() {
-            for (color, count) in total {
-                if let Some(current_count) = cubes.get(color) {
-                    if count > current_count {
-                        cubes.insert(color, *count);
-                    }
+        color_totals
+            .into_iter()
+            .flat_map(|total| total)
+            .for_each(|(color, count)| {
+                if let Some(current_count) = cubes.get_mut(color) {
+                    *current_count = max(*current_count, count);
                 }
-            }
-        }
+            });
+
         cubes
     }
 }
