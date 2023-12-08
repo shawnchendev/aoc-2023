@@ -160,14 +160,14 @@ fn part1(lines: Vec<String>) -> i32 {
     let mut all_visited_cords: Vec<(i32, i32)> = Vec::new();
     let numbers = nearbys
         .iter()
-        .map(|(i, j)| {
+        .filter_map(|(i, j)| -> Option<i32> {
             let contains_coordinate = all_visited_cords.contains(&(*i, *j));
             if contains_coordinate {
-                return 0;
+                return None;
             }
             let (number, visited_cord) = get_full_number_by_position((*i, *j), &grid);
             all_visited_cords.extend(visited_cord);
-            number
+            return Some(number);
         })
         .collect::<Vec<i32>>();
     numbers.iter().sum()
@@ -177,31 +177,26 @@ fn part2(lines: Vec<String>) -> i32 {
     let grid = parse_input(lines);
     let gears = gear_finder(&grid);
     let nearbys: Vec<Vec<(i32, i32)>> = find_near_by_gear_numbers(&grid, &gears);
-    let mut total_gear_ratios: Vec<i32> = Vec::new();
-    for near_by in nearbys {
-        let mut all_visited_cords: Vec<(i32, i32)> = Vec::new();
-        let numbers: Vec<i32> = near_by
-            .iter()
-            .filter_map(|(i, j)| {
-                let contains_coordinate = all_visited_cords.contains(&(*i, *j));
-                if contains_coordinate {
-                    None // Filter out elements with a value of 0
-                } else {
-                    let (number, visited_cord) = get_full_number_by_position((*i, *j), &grid);
-                    all_visited_cords.extend(visited_cord);
-                    Some(number)
-                }
-            })
-            .collect();
 
-        let mut gear_ratios = 1;
-        if numbers.len() == 1 {
-            continue;
-        }
-        for number in numbers {
-            gear_ratios = gear_ratios * number;
-        }
-        total_gear_ratios.push(gear_ratios);
-    }
-    total_gear_ratios.iter().sum()
+    let total_gear_ratios: i32 = nearbys
+        .iter()
+        .map(|near_by: &Vec<(i32, i32)>| -> i32 {
+            let mut all_visited_cords: Vec<(i32, i32)> = Vec::new();
+            near_by
+                .iter()
+                .filter_map(|(i, j)| -> Option<i32> {
+                    let contains_coordinate = all_visited_cords.contains(&(*i, *j));
+                    if contains_coordinate {
+                        None
+                    } else {
+                        let (number, visited_cord) = get_full_number_by_position((*i, *j), &grid);
+                        all_visited_cords.extend(visited_cord);
+                        Some(number)
+                    }
+                })
+                .product()
+        })
+        .sum();
+
+    total_gear_ratios
 }
